@@ -1,6 +1,7 @@
 import {initializeApp} from 'firebase/app';
 import {getDatabase, onValue, ref, set} from 'firebase/database';
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
+import {getAuth, GoogleAuthProvider, onIdTokenChanged, signInWithPopup, signOut} from 'firebase/auth';
 
 // Web app's Firebase configuration
 const firebaseConfig = {
@@ -43,9 +44,28 @@ export const useData = (path, transform) => {
     return [data, loading, error];
 };
 
+export const useUserState = () => {
+    const [user, setUser] = useState();
+
+    useEffect(() => {
+        onIdTokenChanged(getAuth(firebase), setUser);
+    }, []);
+
+    return [user];
+};
+
+const firebaseSignOut = () => signOut(getAuth(firebase));
+
+export {firebaseSignOut as signOut};
+
 export const setData = (path, value) => (
     set(ref(database, path), value)
 );
 
+export const signInWithGoogle = () => {
+    signInWithPopup(getAuth(firebase), new GoogleAuthProvider());
+};
+
 const firebase = initializeApp(firebaseConfig);
+
 const database = getDatabase(firebase);
